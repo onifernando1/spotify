@@ -47,7 +47,7 @@ app.use(function (err, req, res, next) {
 const videoId = "YLslsZuEaNE";
 console.log("hey");
 
-const getVideoInfo = async (id) => {
+const downloadSong = async (id) => {
   try {
     const stream = await ytdl(id, { quality: "highestaudio" });
     let start = Date.now();
@@ -65,6 +65,6 @@ const getVideoInfo = async (id) => {
     console.error(error);
   }
 };
-getVideoInfo(videoId);
+downloadSong(videoId);
 
 module.exports = app;
