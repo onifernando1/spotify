@@ -9,6 +9,7 @@ const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
 const ffmpeg = require("fluent-ffmpeg");
 ffmpeg.setFfmpegPath(ffmpegPath);
 const readline = require("readline");
+const axios = require("axios");
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
@@ -65,6 +66,16 @@ const downloadSong = async (id) => {
     console.error(error);
   }
 };
-downloadSong(videoId);
+// downloadSong(videoId);
+
+const getList = async () => {
+  const list = await axios.get(
+    `https://youtube.googleapis.com/youtube/v3/search?part=snippet&maxResults=25&q=varnish%20la%20pisc&type=video&key=${process.env.API_KEY}`
+  );
+  // console.log(list.data.items[0].id.videoId);
+  console.log(list.data.items[0].id.videoId);
+};
+
+getList();
 
 module.exports = app;
