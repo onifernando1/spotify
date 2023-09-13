@@ -48,13 +48,13 @@ app.use(function (err, req, res, next) {
 const videoId = "YLslsZuEaNE";
 console.log("hey");
 
-const downloadSong = async (id) => {
+const downloadSong = async (id, title) => {
   try {
     const stream = await ytdl(id, { quality: "highestaudio" });
     let start = Date.now();
     ffmpeg(stream)
       .audioBitrate(128)
-      .save(`/home/onifernando1/spotify/a.mp3`)
+      .save(`/home/onifernando1/spotify/${title}.mp3`)
       .on("progress", (p) => {
         readline.cursorTo(process.stdout, 0);
         process.stdout.write(`${p.targetSize}kb downloaded`);
@@ -66,16 +66,45 @@ const downloadSong = async (id) => {
     console.error(error);
   }
 };
-// downloadSong(videoId);
 
-const getList = async () => {
+const getFirstVideoFromSearch = async (query) => {
   const list = await axios.get(
-    `https://youtube.googleapis.com/youtube/v3/search?part=snippet&maxResults=25&q=varnish%20la%20pisc&type=video&key=${process.env.API_KEY}`
+    `https://youtube.googleapis.com/youtube/v3/search?part=snippet&maxResults=25&q=${query}&type=video&key=${process.env.API_KEY}`
   );
-  // console.log(list.data.items[0].id.videoId);
-  console.log(list.data.items[0].id.videoId);
+  return list.data.items[0].id.videoId;
 };
 
-getList();
+const getFirstVideoTitleFromSearch = async (query) => {
+  const list = await axios.get(
+    `https://youtube.googleapis.com/youtube/v3/search?part=snippet&maxResults=25&q=${query}&type=video&key=${process.env.API_KEY}`
+  );
+  return list.data.items[0].snippet.title;
+};
+
+const createQuery = (query) => {
+  let queryArray = query.split("");
+  let spacesChangedArray = queryArray.map((letter) => {
+    if (letter == " ") {
+      return "%20";
+    } else {
+      return letter;
+    }
+  });
+  let finalQuery = spacesChangedArray.join("");
+  return finalQuery;
+};
+
+const runDownloads = async (queriesArray) => {
+  queriesArray.forEach(async (query) => {
+    let convertedQuery = createQuery(query);
+    let videoId = await getFirstVideoFromSearch(convertedQuery);
+    let videoTitle = await getFirstVideoTitleFromSearch(convertedQuery);
+    await downloadSong(videoId, videoTitle);
+  });
+};
+
+let listOfSongs = ["quello che eravamo prima", "aupinard tous les jours"];
+
+runDownloads(listOfSongs);
 
 module.exports = app;
